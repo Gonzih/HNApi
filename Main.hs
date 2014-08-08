@@ -1,5 +1,7 @@
 {-# LANGUAGE OverloadedStrings, TupleSections #-}
 
+module Server where
+
 import Web.Scotty
 
 import Data.IORef
