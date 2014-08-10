@@ -34,12 +34,12 @@ flattenPostsData :: ((String, String),
                     -> [String]
 flattenPostsData ((url, title),
                   (points, (user, (postedAgo, (comments, itemId))))) = [ url
-                                                                   , title
-                                                                   , points
-                                                                   , user
-                                                                   , postedAgo
-                                                                   , comments
-                                                                   , itemId]
+                                                                       , title
+                                                                       , points
+                                                                       , user
+                                                                       , postedAgo
+                                                                       , comments
+                                                                       , itemId]
 
 main :: IO ()
 main = do
@@ -68,7 +68,7 @@ main = do
           points                = css "span" /> getText >>. takeNumber
           comments              = getTextByUrl "item" >>. takeNumber
           author                = getTextByUrl "user"
-          itemId                = getByUrl "item" >>> getAttrValue "href" `orElse` constA "" >>. cleanUpId
+          itemId                = getByUrl "item" >>> getAttrValue "href" >>. cleanUpId
           emptyInfo             = constA ("",("",("",("",""))))
 
           infoSel               = css "td.subtext" >>> (points &&& author &&& postedAgo &&& comments &&& itemId) `orElse` emptyInfo
