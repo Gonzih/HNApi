@@ -7,7 +7,6 @@ import Text.HandsomeSoup
 import Network.HTTP.Conduit
 import qualified Data.ByteString.Lazy.UTF8 as C
 import Data.List
-import Data.List.Split (chunksOf)
 import Data.Char (isSpace)
 
 -- fetchNumber :: String -> String
