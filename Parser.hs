@@ -20,14 +20,26 @@ trim :: String -> String
 trim = f . f
     where f = reverse . dropWhile isSpace
 
-cleanUpPostedAgo :: String -> String
-cleanUpPostedAgo = trim . takeWhile (/= '|')
+cleanUpPostedAgo :: [String] -> [String]
+cleanUpPostedAgo = map $ trim . takeWhile (/= '|')
 
-cleanUpId :: String -> String
-cleanUpId = tail . dropWhile (/= '=')
+cleanUpId :: [String] -> [String]
+cleanUpId = map $ tail . dropWhile (/= '=')
 
-takeNumber :: String -> String
-takeNumber = takeWhile (/= ' ')
+takeNumber :: [String] -> [String]
+takeNumber = map $ takeWhile (/= ' ')
+
+flattenPostsData :: ((String, String),
+                     (String, (String, (String, (String, String)))))
+                    -> [String]
+flattenPostsData ((url, title),
+                  (points, (user, (postedAgo, (comments, itemId))))) = [ url
+                                                                   , title
+                                                                   , points
+                                                                   , user
+                                                                   , postedAgo
+                                                                   , comments
+                                                                   , itemId]
 
 main :: IO ()
 main = do
@@ -35,24 +47,28 @@ main = do
     urls <- runX $ doc html >>> urlAndTitle
     info <- runX $ doc html >>> infoSel
 
-    mapM_ print $ init $ chunksOf 2 urls
-    mapM_ print $ chunksOf 5 info
-    print $ length $ init $ chunksOf 2 urls
-    print $ length $ chunksOf 5 info
+    let postsData = map flattenPostsData $ (init urls) `zip` info
+    mapM_ print postsData
 
-    where doc               = parseHtml . C.toString
+    where doc                   = parseHtml . C.toString
 
-          getTextOrEmpty    = getText `orElse` constA ""
-          -- here there should be ifA used in case there is no link
-          getByUrl urlInfix = css "a" >>> hasAttrValue "href" (isInfixOf urlInfix) /> getTextOrEmpty
+          -- helpers
+          getByUrl urlInfix     = css "a" >>> hasAttrValue "href" (isInfixOf urlInfix)
+          getTextByUrl urlInfix = getByUrl urlInfix /> getText
 
-          url               = getAttrValue "href"
-          title             = getChildren >>> getText
-          urlAndTitle       = css "td.title" >>> css "a" >>> url <+> title
+          -- first tr
+          url                   = getAttrValue "href"
+          title                 = getChildren >>> getText
 
-          points            = css "span" /> getTextOrEmpty >>. map takeNumber
-          author            = getByUrl "user"
-          postedAgo         = getChildren >>> getTextOrEmpty >>. cleanUpInfo >>. map cleanUpPostedAgo
-          comments          = getByUrl "item" >>. map takeNumber
-          itemId            = css "a" >>> hasAttrValue "href" (isInfixOf "item") >>> getAttrValue "href" `orElse` constA "" >>. map cleanUpId
-          infoSel           = css "td.subtext" >>> points <+> author <+> postedAgo <+> comments <+> itemId
+          urlAndTitle           = css "td.title" >>> css "a" >>> (url &&& title)
+
+          -- second tr
+          postedAgo             = getChildren >>> getText >>. cleanUpInfo >>. cleanUpPostedAgo -- Always present
+
+          points                = css "span" /> getText >>. takeNumber
+          comments              = getTextByUrl "item" >>. takeNumber
+          author                = getTextByUrl "user"
+          itemId                = getByUrl "item" >>> getAttrValue "href" `orElse` constA "" >>. cleanUpId
+          emptyInfo             = constA ("",("",("",("",""))))
+
+          infoSel               = css "td.subtext" >>> (points &&& author &&& postedAgo &&& comments &&& itemId) `orElse` emptyInfo
