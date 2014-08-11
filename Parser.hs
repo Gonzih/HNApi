@@ -32,7 +32,7 @@ flattenPostsData :: ((String, String),
                      (String, (String, (String, (String, String)))))
                     -> [String]
 flattenPostsData ((url, title),
-                  (points, (user, (postedAgo, (comments, itemId))))) = [ url
+                  (postedAgo, (points, (user, (comments, itemId))))) = [ url
                                                                        , title
                                                                        , points
                                                                        , user
@@ -68,6 +68,7 @@ main = do
           comments              = getTextByUrl "item" >>. takeNumber
           author                = getTextByUrl "user"
           itemId                = getByUrl "item" >>> getAttrValue "href" >>. cleanUpId
-          emptyInfo             = constA ("",("",("",("",""))))
+          emptyInfo             = constA ("",("",("","")))
 
-          infoSel               = css "td.subtext" >>> (points &&& author &&& postedAgo &&& comments &&& itemId) `orElse` emptyInfo
+                                                                              -- post on everything except postedAgo
+          infoSel               = css "td.subtext" >>> postedAgo &&& ((points &&& author &&& comments &&& itemId) `orElse` emptyInfo)
