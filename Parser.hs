@@ -46,7 +46,7 @@ main = do
     urls <- runX $ doc html >>> urlAndTitle
     info <- runX $ doc html >>> infoSel
 
-    let postsData = map flattenPostsData $ (init urls) `zip` info
+    let postsData = zipWith (curry flattenPostsData) (init urls) info
     mapM_ print postsData
 
     where doc                   = parseHtml . C.toString
