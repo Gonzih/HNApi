@@ -1,26 +1,17 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Main where
+module Parser
+( fetchAndParse )
+where
 
 import Data.List
 import Data.Char (isSpace)
-import qualified Data.ByteString.Lazy.UTF8 as C
+import qualified Data.ByteString.Lazy.UTF8 as BSL
 import Text.Read (readMaybe)
 import Network.HTTP.Conduit
 import Text.XML.HXT.Core
 import Text.HandsomeSoup
-
-data Item = Item { title        :: String
-                 , url          :: String
-                 , id           :: Maybe Int
-                 , commentCount :: Maybe Int
-                 , points       :: Maybe Int
-                 , postedAgo    :: String
-                 , author       :: String
-                 } deriving (Show)
-
-data Feed = Feed { items       :: [Item]
-                 } deriving (Show)
+import Feed
 
 cleanUpInfo :: [String] -> [String]
 cleanUpInfo = filter (/= " by ") . filter (/= "")
@@ -61,16 +52,18 @@ createFeed :: [((String, String),
            -> Feed
 createFeed itemTuples = Feed $ map createItem itemTuples
 
-main :: IO ()
-main = do
+fetchAndParse :: IO (BSL.ByteString)
+fetchAndParse = do
     html <- simpleHttp "https://news.ycombinator.com/"
     urls <- runX $ doc html >>> urlAndTitleA
     info <- runX $ doc html >>> infoSelA
 
-    let postsData = createFeed $ init urls `zip` info
-    print postsData
+    let feed = createFeed $ init urls `zip` info
+    print feed
 
-    where doc                   = parseHtml . C.toString
+    return $ feedToJSON feed
+
+    where doc                   = parseHtml . BSL.toString
 
           -- helpers
           getByUrl urlInfix     = css "a" >>> hasAttrValue "href" (isInfixOf urlInfix)

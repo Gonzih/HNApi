@@ -16,7 +16,7 @@ build-type:          Simple
 cabal-version:       >=1.10
 
 executable HNApi
-  main-is:             Parser.hs
+  main-is:             Main.hs
   -- other-modules:
   -- other-extensions:
   other-extensions:    OverloadedStrings
