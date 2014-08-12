@@ -9,9 +9,6 @@ import qualified Data.ByteString.Lazy.UTF8 as C
 import Data.List
 import Data.Char (isSpace)
 
--- fetchNumber :: String -> String
--- fetchNumber = takeWhile (/= " ")
-
 cleanUpInfo :: [String] -> [String]
 cleanUpInfo = filter (/= " by ") . filter (/= "")
 
