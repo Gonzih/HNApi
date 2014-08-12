@@ -1,4 +1,4 @@
-### HNApi
+### HNApi [![Build Status](https://travis-ci.org/Gonzih/HNApi.svg?branch=master)](https://travis-ci.org/Gonzih/HNApi)
 
 Hacker News front page parser and server.
 
