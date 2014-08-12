@@ -59,7 +59,6 @@ fetchAndParse = do
     info <- runX $ doc html >>> infoSelA
 
     let feed = createFeed $ init urls `zip` info
-    print feed
 
     return $ feedToJSON feed
 

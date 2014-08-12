@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings, TupleSections #-}
 
-module Server where
+module Main where
 
 import Data.IORef
 import Control.Monad.IO.Class
