@@ -2,12 +2,25 @@
 
 module Main where
 
-import Text.XML.HXT.Core
-import Text.HandsomeSoup
-import Network.HTTP.Conduit
-import qualified Data.ByteString.Lazy.UTF8 as C
 import Data.List
 import Data.Char (isSpace)
+import qualified Data.ByteString.Lazy.UTF8 as C
+import Text.Read (readMaybe)
+import Network.HTTP.Conduit
+import Text.XML.HXT.Core
+import Text.HandsomeSoup
+
+data Item = Item { title        :: String
+                 , url          :: String
+                 , id           :: Maybe Int
+                 , commentCount :: Maybe Int
+                 , points       :: Maybe Int
+                 , postedAgo    :: String
+                 , author       :: String
+                 } deriving (Show)
+
+data Feed = Feed { items       :: [Item]
+                 } deriving (Show)
 
 cleanUpInfo :: [String] -> [String]
 cleanUpInfo = filter (/= " by ") . filter (/= "")
@@ -25,26 +38,36 @@ cleanUpId = map $ tail . dropWhile (/= '=')
 takeNumber :: [String] -> [String]
 takeNumber = map $ takeWhile (/= ' ')
 
-flattenPostsData :: ((String, String),
-                     (String, (String, (String, (String, String)))))
-                    -> [String]
-flattenPostsData ((url, title),
-                  (postedAgo, (points, (user, (comments, itemId))))) = [ url
-                                                                       , title
-                                                                       , points
-                                                                       , user
-                                                                       , postedAgo
-                                                                       , comments
-                                                                       , itemId]
+createItem :: ((String, String),
+               (String, (String, (String, (String, String)))))
+           -> Item
+createItem ((pUrl, pTitle),
+            (pPostedAgo, (pPoints, (pUser, (pComments, pItemId))))) = Item
+                                                                      pTitle
+                                                                      pUrl
+                                                                      maybeId
+                                                                      maybeComments
+                                                                      maybePoints
+                                                                      pPostedAgo
+                                                                      pUser
+                                                                      where maybeId       = readMaybe pItemId
+                                                                            maybeComments = readMaybe pComments
+                                                                            maybePoints   = readMaybe pPoints
+
+
+createFeed :: [((String, String),
+               (String, (String, (String, (String, String)))))]
+           -> Feed
+createFeed itemTuples = Feed $ map createItem itemTuples
 
 main :: IO ()
 main = do
     html <- simpleHttp "https://news.ycombinator.com/"
-    urls <- runX $ doc html >>> urlAndTitle
-    info <- runX $ doc html >>> infoSel
+    urls <- runX $ doc html >>> urlAndTitleA
+    info <- runX $ doc html >>> infoSelA
 
-    let postsData = zipWith (curry flattenPostsData) (init urls) info
-    mapM_ print postsData
+    let postsData = createFeed $ init urls `zip` info
+    print postsData
 
     where doc                   = parseHtml . C.toString
 
@@ -53,19 +76,19 @@ main = do
           getTextByUrl urlInfix = getByUrl urlInfix /> getText
 
           -- first tr
-          url                   = getAttrValue "href"
-          title                 = getChildren >>> getText
+          urlA                  = getAttrValue "href"
+          titleA                = getChildren >>> getText
 
-          urlAndTitle           = css "td.title" >>> css "a" >>> (url &&& title)
+          urlAndTitleA          = css "td.title" >>> css "a" >>> (urlA &&& titleA)
 
           -- second tr
-          postedAgo             = getChildren >>> getText >>. cleanUpInfo >>. cleanUpPostedAgo -- Always present
+          postedAgoA            = getChildren >>> getText >>. cleanUpInfo >>. cleanUpPostedAgo -- Always present
 
-          points                = css "span" /> getText >>. takeNumber
-          comments              = getTextByUrl "item" >>. takeNumber
-          author                = getTextByUrl "user"
-          itemId                = getByUrl "item" >>> getAttrValue "href" >>. cleanUpId
-          emptyInfo             = constA ("",("",("","")))
+          pointsA               = css "span" /> getText >>. takeNumber
+          commentsA             = getTextByUrl "item" >>. takeNumber
+          authorA               = getTextByUrl "user"
+          itemIdA               = getByUrl "item" >>> getAttrValue "href" >>. cleanUpId
+          emptyInfoA            = constA ("",("",("","")))
 
                                                                               -- post on everything except postedAgo
-          infoSel               = css "td.subtext" >>> postedAgo &&& ((points &&& author &&& comments &&& itemId) `orElse` emptyInfo)
+          infoSelA              = css "td.subtext" >>> postedAgoA &&& ((pointsA &&& authorA &&& commentsA &&& itemIdA) `orElse` emptyInfoA)

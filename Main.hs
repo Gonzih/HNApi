@@ -2,11 +2,11 @@
 
 module Server where
 
-import Web.Scotty
-
 import Data.IORef
 import Control.Monad.IO.Class
 import qualified Data.Text.Lazy as T
+
+import Web.Scotty
 
 import Network.Wai.Middleware.RequestLogger
 
