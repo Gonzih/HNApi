@@ -42,17 +42,18 @@ createItem :: ((String, String),
                (String, (String, (String, (String, String)))))
            -> Item
 createItem ((pUrl, pTitle),
-            (pPostedAgo, (pPoints, (pUser, (pComments, pItemId))))) = Item
-                                                                      pTitle
-                                                                      pUrl
-                                                                      maybeId
-                                                                      maybeComments
-                                                                      maybePoints
-                                                                      pPostedAgo
-                                                                      pUser
-                                                                      where maybeId       = readMaybe pItemId
-                                                                            maybeComments = readMaybe pComments
-                                                                            maybePoints   = readMaybe pPoints
+            (pPostedAgo, (pPoints, (pUser, (pComments, pItemId)))))
+           = Item
+             pTitle
+             pUrl
+             maybeId
+             maybeComments
+             maybePoints
+             pPostedAgo
+             pUser
+             where maybeId       = readMaybe pItemId
+                   maybeComments = readMaybe pComments
+                   maybePoints   = readMaybe pPoints
 
 
 createFeed :: [((String, String),
