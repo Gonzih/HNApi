@@ -75,7 +75,7 @@ fetchAndParse = do
           urlAndTitleA          = css "td.title" >>> css "a" >>> (urlA &&& titleA)
 
           -- second tr
-          postedAgoA            = getChildren >>> getText >>. cleanUpInfo >>. cleanUpPostedAgo -- Always present
+          postedAgoA            = getChildren >>> getText >>. cleanUpInfo >>. cleanUpPostedAgo
 
           pointsA               = css "span" /> getText >>. takeNumber
           commentsA             = getTextByUrl "item" >>. takeNumber
@@ -83,5 +83,5 @@ fetchAndParse = do
           itemIdA               = getByUrl "item" >>> getAttrValue "href" >>. cleanUpId
           emptyInfoA            = constA ("",("",("","")))
 
-                                                                              -- post on everything except postedAgo
+                                                                       -- fail on everything except postedAgo
           infoSelA              = css "td.subtext" >>> postedAgoA &&& ((pointsA &&& authorA &&& commentsA &&& itemIdA) `orElse` emptyInfoA)
