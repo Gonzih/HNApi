@@ -21,7 +21,7 @@ main = scotty 4000 $ do
         let encodedJsonData = TE.decodeUtf8 jsonBS
 
         _ <- liftIO $ putStrLn "Data was fetched"
-        _ <- liftIO $ atomicModifyIORef' cache (, encodedJsonData)
+        _ <- liftIO $ atomicModifyIORef' cache (encodedJsonData,)
         text encodedJsonData
         setHeader "content-type" "application/json"
 
