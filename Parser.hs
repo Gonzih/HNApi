@@ -87,5 +87,4 @@ fetchAndParse = do
           itemIdA               = getByUrl "item" >>> getAttrValue "href" >>. cleanUpId
           emptyInfoA            = constA ("",("",("","")))
 
-                                                                       -- fail on everything except postedAgo
           infoSelA              = css "td.subtext" >>> postedAgoA &&& ((pointsA &&& authorA &&& commentsA &&& itemIdA) `orElse` emptyInfoA)

@@ -36,6 +36,5 @@ instance ToJSON Item where
            , "author"       .= author
            ]
 
-
 feedToJSON :: Feed -> BSL.ByteString
 feedToJSON = encode
