@@ -3,11 +3,14 @@
 module Main where
 
 import Data.IORef
-import Control.Monad (forever)
-import Control.Monad.IO.Class
+import Control.Monad (forever, liftM)
+import Control.Monad.IO.Class (liftIO)
 import Control.Concurrent (forkIO, threadDelay)
 import qualified Data.Text.Lazy as T
 import qualified Data.Text.Lazy.Encoding as TE
+import System.IO.Error (catchIOError)
+import System.Environment (getEnv)
+import Text.Read (readMaybe)
 import Web.Scotty
 import Network.Wai.Middleware.RequestLogger
 import Parser
@@ -25,15 +28,20 @@ updateLoop ref = forever $ do
     updateRefWithJson ref
     threadDelay 300000000
 
+getEnvVar :: String -> IO String
+getEnvVar key = catchIOError (getEnv key) (\_ -> return "4000")
+
 main :: IO ()
-main = scotty 4000 $ do
-    middleware logStdoutDev
+main = do
+    port <- liftM read $ getEnvVar "PORT"
+    scotty port $ do
+        middleware logStdoutDev
 
-    cache <- liftIO $ newIORef T.empty
+        cache <- liftIO $ newIORef T.empty
 
-    _ <- liftIO $ forkIO $ updateLoop cache
+        _ <- liftIO $ forkIO $ updateLoop cache
 
-    get "/" $ do
-        jsonText <- liftIO $ readIORef cache
-        text jsonText
-        setHeader "content-type" "application/json"
+        get "/" $ do
+            jsonText <- liftIO $ readIORef cache
+            text jsonText
+            setHeader "content-type" "application/json"
