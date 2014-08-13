@@ -29,6 +29,10 @@ cleanUpId = map $ tail . dropWhile (/= '=')
 takeNumber :: [String] -> [String]
 takeNumber = map $ takeWhile (/= ' ')
 
+zerifyComments :: String -> String
+zerifyComments s | s == "discuss" = "0"
+                 | otherwise = s
+
 createItem :: ((String, String),
                (String, (String, (String, (String, String)))))
            -> Item
@@ -43,7 +47,7 @@ createItem ((pUrl, pTitle),
              pPostedAgo
              pUser
              where maybeId       = readMaybe pItemId
-                   maybeComments = readMaybe pComments
+                   maybeComments = readMaybe $ zerifyComments pComments
                    maybePoints   = readMaybe pPoints
 
 
