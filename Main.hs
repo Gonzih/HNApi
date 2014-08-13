@@ -3,6 +3,7 @@
 module Main where
 
 import Data.IORef
+import Control.Monad (forever)
 import Control.Monad.IO.Class
 import Control.Concurrent (forkIO, threadDelay)
 import qualified Data.Text.Lazy as T
@@ -20,11 +21,9 @@ updateRefWithJson cache = do
     putStrLn "Data was fetched"
 
 updateLoop :: IORef T.Text -> IO ()
-updateLoop ref = do
+updateLoop ref = forever $ do
     updateRefWithJson ref
     threadDelay 300000000
-    updateLoop ref
-    return ()
 
 main :: IO ()
 main = scotty 4000 $ do
