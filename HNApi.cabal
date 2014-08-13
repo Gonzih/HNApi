@@ -21,7 +21,7 @@ executable HNApi
   -- other-extensions:
   other-extensions:    OverloadedStrings
                      , TupleSections
-  build-depends:       base >=4.6 && <4.7
+  build-depends:       base >=4.6
                      , wai-extra >= 3.0
                      , scotty >= 0.8.2
                      , text >= 1.1.1
