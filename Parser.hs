@@ -30,8 +30,8 @@ takeNumber :: [String] -> [String]
 takeNumber = map $ takeWhile (/= ' ')
 
 zerifyComments :: String -> String
-zerifyComments s | s == "discuss" = "0"
-                 | otherwise = s
+zerifyComments "discuss" = "0"
+zerifyComments s         = s
 
 createItem :: ((String, String),
                (String, (String, (String, (String, String)))))
