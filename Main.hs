@@ -10,7 +10,7 @@ import qualified Data.Text.Lazy as T
 import qualified Data.Text.Lazy.Encoding as TE
 import System.IO.Error (catchIOError)
 import System.Environment (getEnv)
-import Text.Read (readMaybe)
+import System.IO (stderr, hPutStr, hPrint)
 import Web.Scotty
 import Network.Wai.Middleware.RequestLogger
 import Parser
@@ -23,9 +23,14 @@ updateRefWithJson cache = do
 
     putStrLn "Data was fetched"
 
+logIOError :: IOError -> IO ()
+logIOError e =
+    hPutStr stderr "Error while updating cache: "
+    >> hPrint stderr e
+
 updateLoop :: IORef T.Text -> IO ()
 updateLoop ref = forever $ do
-    updateRefWithJson ref
+    catchIOError (updateRefWithJson ref) logIOError
     threadDelay 300000000
 
 getEnvVar :: String -> IO String
