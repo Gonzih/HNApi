@@ -17,10 +17,7 @@ import Parser
 
 updateRefWithJson :: IORef T.Text -> IO ()
 updateRefWithJson cache = do
-    jsonBS <- fetchAndParse
-    let encodedJsonData = TE.decodeUtf8 jsonBS
-    _ <- atomicModifyIORef' cache (encodedJsonData,)
-
+    fetchAndParse >>= return . TE.decodeUtf8 >>= atomicWriteIORef cache
     putStrLn "Data was fetched"
 
 logIOError :: IOError -> IO ()
