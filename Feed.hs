@@ -23,7 +23,7 @@ data Feed = Feed { items       :: [Item]
 
 instance ToJSON Feed where
  toJSON (Feed items) =
-    object [ "items"  .= items ]
+    object [ "items" .= items ]
 
 instance ToJSON Item where
  toJSON (Item title url id commentCount points postedAgo author) =
